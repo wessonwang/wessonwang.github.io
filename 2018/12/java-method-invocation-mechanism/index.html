@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="en">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.1.1">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.1.1">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.1.1">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.1.1">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.1.1" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '7.1.1',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false,"dimmer":false},
+    back2top: true,
+    back2top_sidebar: false,
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="1. 一个方法调用的例子123456789101112131415public class CYoungMan extends YoungMan&amp;#123;    @Override    public String meet(Object obj) &amp;#123;        return &quot;Object class&quot;;    &amp;#125;    @Override    public Stri">
+<meta name="keywords" content="Java,JVM">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java方法调用机制">
+<meta property="og:url" content="https://wessonwang.github.io/2018/12/java-method-invocation-mechanism/index.html">
+<meta property="og:site_name" content="word log">
+<meta property="og:description" content="1. 一个方法调用的例子123456789101112131415public class CYoungMan extends YoungMan&amp;#123;    @Override    public String meet(Object obj) &amp;#123;        return &quot;Object class&quot;;    &amp;#125;    @Override    public Stri">
+<meta property="og:locale" content="en">
+<meta property="og:updated_time" content="2019-05-19T10:49:23.799Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Java方法调用机制">
+<meta name="twitter:description" content="1. 一个方法调用的例子123456789101112131415public class CYoungMan extends YoungMan&amp;#123;    @Override    public String meet(Object obj) &amp;#123;        return &quot;Object class&quot;;    &amp;#125;    @Override    public Stri">
+
+
+
+
+
+  
+  
+  <link rel="canonical" href="https://wessonwang.github.io/2018/12/java-method-invocation-mechanism/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Java方法调用机制 | word log</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="en">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">word log</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Home</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archives</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://wessonwang.github.io/2018/12/java-method-invocation-mechanism/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Wesson Wang">
+      <meta itemprop="description" content="word log, not vlog, for tech note.">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="word log">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Java方法调用机制
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2018-12-10 00:11:00" itemprop="dateCreated datePublished" datetime="2018-12-10T00:11:00+08:00">2018-12-10</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2019-05-19 18:49:23" itemprop="dateModified" datetime="2019-05-19T18:49:23+08:00">2019-05-19</time>
+              
+            
+          </span>
+
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h5 id="1-一个方法调用的例子"><a href="#1-一个方法调用的例子" class="headerlink" title="1. 一个方法调用的例子"></a>1. 一个方法调用的例子</h5><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CYoungMan</span> <span class="keyword">extends</span> <span class="title">YoungMan</span></span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">meet</span><span class="params">(Object obj)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">"Object class"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">meet</span><span class="params">(String str)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">"String class"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        Object str = <span class="string">"kat"</span>;</span><br><span class="line">        YoungMan ym = <span class="keyword">new</span> CYoungMan();</span><br><span class="line">        String result = ym.meet(str);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在上面的例子中，对于方法调用<code>ym.meet(str)</code>，我们大概知道有两个阶段：<br>（1）在编译阶段，根据方法接收者<code>ym</code>的静态类型（static type）即<code>YoungMan</code>，以及参数<code>str</code>的静态类型<code>Object</code>，来决定该方法调用的符号引用：<code>YoungMan.meet:(Ljava/lang/Object;)Ljava/lang/String;</code>（见javap的字节码反汇编结果<code>invokevirtual #7</code>）；<br>（2）在运行时阶段，根据方法接收者<code>ym</code>的实际类型（actual type）即<code>CYoungMan</code>以及它的继承层级，来确定方法实际引用。<br>上面的两个阶段分别是方法重载解析、动态分派。<br><a id="more"></a></p>
+<blockquote>
+<p>说明：1. 方法重载解析，国内一般翻译为静态分派（相对于动态分派），但实际英文文档是 Method Overload Resolution。 这里个人感觉按英文语义翻译更好，所以采用这个。</p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">...</span><br><span class="line">public static void main(java.lang.String[]);</span><br><span class="line">  descriptor: ([Ljava/lang/String;)V</span><br><span class="line">  flags: ACC_PUBLIC, ACC_STATIC</span><br><span class="line">  Code:</span><br><span class="line">    stack=2, locals=4, args_size=1</span><br><span class="line">       0: ldc           #4                  // String kat</span><br><span class="line">       2: astore_1</span><br><span class="line">       3: new           #5                  // class method/invoke/CYoungMan</span><br><span class="line">       6: dup</span><br><span class="line">       7: invokespecial #6                  // Method &quot;&lt;init&gt;&quot;:()V</span><br><span class="line">      10: astore_2</span><br><span class="line">      11: aload_2</span><br><span class="line">      12: aload_1</span><br><span class="line">      13: invokevirtual #7                  // Method method/invoke/YoungMan.meet:(Ljava/lang/Object;)Ljava/lang/String;</span><br><span class="line">      16: astore_3</span><br><span class="line">      17: return</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+<h5 id="2-方法重载解析（Method-Overload-Resolution）"><a href="#2-方法重载解析（Method-Overload-Resolution）" class="headerlink" title="2. 方法重载解析（Method Overload Resolution）"></a>2. 方法重载解析（<a href="https://docs.oracle.com/javase/specs/jls/se7/html/jls-15.html#jls-15.12.2" target="_blank" rel="noopener">Method Overload Resolution</a>）</h5><p>可以看到，编译阶段能确定的、能使用的信息只有方法接收者或者入参的静态类型，以及<strong>入参静态类型</strong>的继承层次关系。对于一个确定的方法接收者及方法名的方法调用，JAVA编译器会根据入参来选取一个重载方法，这过程有三个阶段：<br>（1）不考虑基本类型的装箱/拆箱、以及可变长参数这两种情况，选取重载方法；<br>（2）如果在（1）找不到适配的方法，那么采用策略选取重载方法：允许装箱/拆箱，但排除可变长参数；<br>（3）如果在（2）找不到适配的方法，那么采用装箱/拆箱与可变长参数组合使用的策略；<br>在任何一个阶段找到重载方法的话，解析过程就结束了。<br>在JAVA语言规范里面，上面的过程称之为“确认潜在的适配方法”（Identify Potentially Applicable Methods），也就是说，在任一阶段可能找到多个候选的方法。如果找到多个方法的话，再从中选择最贴切的一个。这里利用的关键信息就是入参静态类型的继承层次关系，原则就是优先选择继承路径最短的。举个简单的例子，现在有两个候选方法：<code>m1(TypeA a)</code>、<code>m1(TypeB b)</code>，而入参的静态类型是<code>TypeC</code>，三种类型的继承层次关系是<code>TypeC-&gt;TypeB-&gt;TypeA</code>，那么方法<code>m1(TypeB b)</code>肯定是最贴切的（最具体的），因为继承路径最短。</p>
+<h5 id="3-动态分派-（Dynamic-Dispatch）"><a href="#3-动态分派-（Dynamic-Dispatch）" class="headerlink" title="3. 动态分派 （Dynamic Dispatch）"></a>3. 动态分派 （Dynamic Dispatch）</h5><p>对于重载解析中确定的方法，由于重写（和继承）特性而可能存在多个潜在的方法版本，必须在运行期按实际类型确定方法版本，即动态分派。<br>在运行期执行时，JVM提供了有5种方法调用字节码指令：<br>（1）invokestatic，调用静态方法；<br>（2）invokespecial，调用实例构造器<init>方法、私有方法和父类方法；<br>（3）invokevirtual，调用所有的虚方法；<br>（4）invokeinterface，调用接口方法；<br>（5）invokedynamic，调用动态方法；<br>前四种指令，均在类加载-解析阶段将符号引用解析为方法的直接引用。<br>至于最后的invokedynamic，是在JDK7中新增的指令，目的是在JVM中更好地运行动态类型语言。简单说就是，在运行期能实现“重载方法解析+动态分派”两重功能的方法解析调用。其中，前两个指令对应的方法，因为潜在的方法版本唯一，直接引用是具体方法的指针，在执行指令可以直接访问了，这些方法也称之为非虚方法。相反，第3、4个指令，虚方法及接口方法，得到的直接引用只是方法表的一个索引值，执行指令时还需要进一步解析，这里有两个阶段。<br>（1）非接口方法解析（类加载-解析阶段）<br>这里说下非接口方法符号引用解析为直接引用的过程。假设目标符号引用为类C，则JVM的步骤如下：</init></p>
+<ol>
+<li>在C中查找符合名字及描述符的方法，如果有则返回方法直接引用（方法指针），结束；</li>
+<li>如果1没有找到，按继承层次从低往高，先从C的父类中继续搜索，直至Object类，如果有则返回方法直接引用（方法表索引值），结束；</li>
+<li>如果2没有找到，在C实现的接口列表及他们父接口中搜索，如果找到，还要满足一条限制【若C不是抽象类，结果必须不能为抽象方法，不然报错AbstractMethodError】才能返回。</li>
+<li>如果最后都没找到，报错NoSuchMethodError。<br>当然，过程找到的方法必须具备访问权限了，不然报错IllegalAccessError。接口方法解析也是类似的原理。</li>
+</ol>
+<p>（2）invokevirtual 的解析过程（指令执行阶段）</p>
+<ol>
+<li>确定操作数栈顶第一个元素的所指向的对象实际类型，设为C；</li>
+<li>在C中查找符合名字及描述符的方法，如果有则返回方法直接引用（方法指针），结束；</li>
+<li>如果1没有找到，按继承层次从低往高，先从C的父类中继续搜索，直至Object类，如果有则返回方法直接引用（方法指针），结束；<br>这个过程其实跟类加载的方法解析是类似的，都是在类继承层次上按图索骥。可以看到，这里涉及逐层的搜索，性能是堪忧的，因此在虚拟机的实际实现中会采用空间换时间的策略，构建虚方法表（对于invokeinterface，则是接口方法表），使用虚方法表索引来替代层层搜索。</li>
+</ol>
+<h5 id="4-方法表"><a href="#4-方法表" class="headerlink" title="4. 方法表"></a>4. 方法表</h5><p>在前面提到，方法表是用来加速类加载阶段的方法解析、虚方法/接口方法指令的解析过程的，所以方法表的构建一定是在类加载过程的解析阶段之前。你大概猜到了，是的，是在准备阶段，除了为静态字段分配内存外，还构造了类的方法表。<a href="https://github.com/openjdk-mirror/jdk7u-hotspot/blob/master/src/share/vm/oops/klassVtable.hpp" target="_blank" rel="noopener">方法表的构建过程</a>就不赘言了，下面列一下它的两点特征：</p>
+<ol>
+<li>本质上是一个数组，元素指向当前类或者祖先类的方法（方法引用）；</li>
+<li>子类方法表包含父类方法表中所有方法，如果某个方法在子类中没有被重写，则方法引用与父类的一致，否则用自己实现的方法替换父类的；<br>相当于把一个分层结构水平铺开，无论类加载的方法解析还是虚方法调用指令的解析，只需要在当前实际类型的方法表中遍历搜索即可，不需要层层递归搜索了。<blockquote>
+<p>问题与讨论：<br>1、对包装类型拆箱，不考虑空指针问题，相当于把问题抛给coder？</p>
+</blockquote>
+</li>
+</ol>
+<h5 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h5><ol>
+<li><a href="https://docs.oracle.com/javase/specs/jls/se7/html/jls-15.html#jls-15.12.2" target="_blank" rel="noopener">Compile-Time Step 2: Determine Method Signature</a></li>
+<li><a href="https://github.com/openjdk-mirror/jdk7u-hotspot/blob/master/src/share/vm/oops/klassVtable.hpp" target="_blank" rel="noopener">虚方法表结构源码</a></li>
+<li><a href="https://book.douban.com/subject/24722612/" target="_blank" rel="noopener">深入理解Java虚拟机（第2版）</a></li>
+<li><a href="https://time.geekbang.org/column/108" target="_blank" rel="noopener">极客时间付费课程-深入拆解 Java 虚拟机</a></li>
+</ol>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Java/" rel="tag"># Java</a>
+          
+            <a href="/tags/JVM/" rel="tag"># JVM</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/05/abstract-of-architecture-evolution-in-large-website/" rel="next" title="大型网站架构的演变简要">
+                <i class="fa fa-chevron-left"></i> 大型网站架构的演变简要
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">Wesson Wang</p>
+              <div class="site-description motion-element" itemprop="description">word log, not vlog, for tech note.</div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">2</span>
+                    <span class="site-state-item-name">posts</span>
+                  </a>
+                </div>
+              
+
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">3</span>
+                    <span class="site-state-item-name">tags</span>
+                  
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-5"><a class="nav-link" href="#1-一个方法调用的例子"><span class="nav-number">1.</span> <span class="nav-text">1. 一个方法调用的例子</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-方法重载解析（Method-Overload-Resolution）"><span class="nav-number">2.</span> <span class="nav-text">2. 方法重载解析（Method Overload Resolution）</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#3-动态分派-（Dynamic-Dispatch）"><span class="nav-number">3.</span> <span class="nav-text">3. 动态分派 （Dynamic Dispatch）</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#4-方法表"><span class="nav-number">4.</span> <span class="nav-text">4. 方法表</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#参考文献"><span class="nav-number">5.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Wesson Wang</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> v7.1.1</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/utils.js?v=7.1.1"></script>
+
+  <script src="/js/motion.js?v=7.1.1"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/schemes/muse.js?v=7.1.1"></script>
+
+
+
+
+  
+  <script src="/js/scrollspy.js?v=7.1.1"></script>
+<script src="/js/post-details.js?v=7.1.1"></script>
+
+
+
+  
+
+
+  <script src="/js/next-boot.js?v=7.1.1"></script>
+
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
